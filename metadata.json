@@ -1,0 +1,6 @@
+{
+  "name": "Food Ghor (ফুড ঘর)",
+  "description": "ফুড ঘর — প্রিমিয়াম কেমিক্যাল-মুক্ত দেশি পাটালি, নলেন ও খেজুর গুড়ের বিশ্বস্ত ঠিকানা। খাঁটি প্রাকৃতিক স্বাদে সরাসরি কৃষকের থেকে সংগৃহীত।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

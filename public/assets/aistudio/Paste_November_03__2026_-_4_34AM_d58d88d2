@@ -1,0 +1,1593 @@
+# Food Ghor — 6-Document Context Architecture
+### *Optimized for Google AI Studio (Gemini) as primary coding agent*
+
+Since **Google AI Studio** behaves differently from file-system agents like Claude Code or Cursor (it works via **System Instructions + attached context files**, not `read_file()` tool calls), this architecture ships with **three agent-config layers**:
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Primary | `AI_STUDIO_SYSTEM_PROMPT.md` | Paste into Google AI Studio's **System Instructions** field |
+| Portable | `CLAUDE.md` | For when you swap agents later (Claude Code, Cursor) |
+| Portable | `.cursorrules` | For Cursor sessions |
+
+Plus the **6 authoritative docs** under `/docs/`. Together they give Gemini zero ambiguity.
+
+---
+
+## 📁 `docs/01_PRD.md`
+
+````markdown
+# 01 — Product Requirements Document (PRD)
+**Product:** Food Ghor (ফুড ঘর) — Premium Jaggery Landing Page
+**Business Owner:** Independent Bangladeshi SME (single operator)
+**Prepared for:** Gemini (Google AI Studio) as coding agent
+**Version:** 1.0.0 · **Status:** LOCKED
+
+---
+
+## 1. Core Problem
+Jaggery (গুড়) in Bangladesh is sold as a **commodity**, not a **brand**. Small sellers fight on price in crowded marketplaces (Daraz, Facebook Pages) with weak storytelling, inconsistent visuals, and zero trust signals. Buyers who *want* to pay a premium for authentic, chemical-free, region-sourced jaggery (পাটালি গুড়, নলেন গুড়, খেজুর গুড়) have no premium Bengali-first destination.
+
+**Food Ghor exists to convert commodity into premium** by:
+1. Teaching purity (কেমিক্যাল-মুক্ত, দেশি, মৌসুমি) through premium Bengali content
+2. Building trust (sourcing story + testimonials + clear contact)
+3. Capturing **qualified leads** (call / WhatsApp / inquiry form) without owning a full e-commerce stack
+
+## 2. Target Persona
+
+### Primary — "রহিমা বেগম" · Premium Retail Buyer
+- **Age:** 28–45
+- **Location:** Urban Bangladesh (Dhaka, Chattogram, Sylhet)
+- **Income:** Mid-to-high; health-conscious; willing to pay 20–35% premium
+- **Device:** Android, ~4G, portrait mobile
+- **Language:** Bengali only; reads on WhatsApp/Facebook daily
+- **Fear:** Adulterated jaggery (চিনি মেশানো, কেমিক্যাল)
+- **Trigger:** Family health, festivals (পৌষ, শীতকালীন গুড়), gifting
+
+### Secondary — "সুজন ভাই" · B2B Wholesale Buyer
+- **Role:** Owner of a small মিষ্টির দোকান / bakery / café
+- **Need:** Consistent bulk supply, invoice, predictable pricing
+- **Behavior:** Cares about reliability over storytelling; needs to signal wholesale in inquiry form
+
+## 3. MVP User Stories
+
+| ID | As a… | I want… | So that… | Priority |
+|----|-------|---------|----------|----------|
+| US-01 | Visitor | A hero that communicates "premium Bengali jaggery" in <5s | I trust the brand immediately | P0 |
+| US-02 | Visitor | To browse all products in a Bengali grid (name, weight, price) | I can pick what I want | P0 |
+| US-03 | Visitor | A product detail page with long-form Bengali description + sourcing | I understand the value | P0 |
+| US-04 | Visitor | To submit an inquiry form (name, phone, product, qty, message) | Owner contacts me | P0 |
+| US-05 | Visitor | A "WhatsApp-এ অর্ডার করুন" CTA with a prefilled Bengali message | One-tap ordering | P0 |
+| US-06 | Visitor | A "ফোনে অর্ডার" tel: link | I can call directly | P0 |
+| US-07 | Visitor | To read the sourcing story + benefits | I'm convinced of purity | P1 |
+| US-08 | Visitor | To see testimonials with real names + locations | I trust the brand | P1 |
+| US-09 | Visitor | A clear Bengali thank-you after inquiry | I know it worked | P0 |
+| US-10 | B2B buyer | To flag my inquiry as "পাইকারি" | Owner responds with bulk pricing | P1 |
+| US-11 | Owner (admin) | To log in and manage products/categories/testimonials/inquiries | I run the site myself | P0 |
+| US-12 | Owner (admin) | To mark inquiry status (new → contacted → converted → closed) | I track my pipeline | P1 |
+
+## 4. Success Metrics (first 90 days post-launch)
+
+| Metric | Target | How measured |
+|--------|--------|--------------|
+| Inquiry form conversion | ≥ 3.0% of unique visitors | Server log count |
+| WhatsApp CTA click-through | ≥ 8% | Frontend event |
+| Mobile LCP (4G) | < 2.5s | Lighthouse CI |
+| Lighthouse Mobile Perf | ≥ 90 | Lighthouse CI |
+| Lighthouse A11y | ≥ 95 | Lighthouse CI |
+| Bounce rate | < 55% | Privacy-first analytics (Plausible, optional) |
+| API p95 (inquiry POST) | ≤ 300ms | Server logs |
+| P0 security incidents | 0 | Manual audit |
+
+## 5. Out of Scope — STRICT Non-Goals (v1)
+
+Any PR that introduces the following **must be rejected**:
+
+- ❌ Customer registration / accounts
+- ❌ Payment gateway (bKash, SSLCommerz, Nagad, Stripe)
+- ❌ Shopping cart, checkout, order tracking
+- ❌ English or Arabic UI (Bengali only)
+- ❌ Mobile app (iOS / Android native)
+- ❌ Blog engine / CMS (use `frontend/src/content/bn.ts` for static copy)
+- ❌ Email marketing automation
+- ❌ Real-time inventory sync / stock management UI
+- ❌ Facebook Pixel / Google Analytics by default (privacy-first; opt-in only)
+- ❌ Server-side rendering (Vite SPA only)
+- ❌ Microservices / GraphQL / WebSockets
+- ❌ Push notifications
+- ❌ Admin mobile app (admin UI = web only, desktop-first)
+
+## 6. Non-Functional Requirements
+- **Language:** 100% Bengali (bn-BD) UI text. English only inside code identifiers and brand name "Food Ghor".
+- **Mobile-first:** Designed from 375px; graceful up to 1440px+.
+- **Accessibility:** WCAG 2.1 AA. `<html lang="bn">`. All interactive elements keyboard-reachable.
+- **Performance:** Initial JS ≤ 200KB gzipped. Hero image ≤ 180KB. CLS ≤ 0.05.
+- **SEO:** Bengali `<title>`, `<meta>`, Open Graph, JSON-LD `Product` + `LocalBusiness`.
+- **Security:** See `04_TRD.md §5` — non-negotiable.
+- **Hosting tolerance:** Shared PHP hosting (PHP-FPM 8.3 + MySQL 8), best-effort uptime.
+
+## 7. Assumptions
+- Single-tenant deployment; one business.
+- Owner supplies product photos (WebP preferred), logo, and Bengali long-form copy.
+- WhatsApp Business number is live.
+- SSL certificate provisioned by host.
+- Owner is comfortable using a simple admin panel (no CMS training needed beyond CRUD forms).
+````
+
+---
+
+## 📁 `docs/02_AppFlow.md`
+
+````markdown
+# 02 — App Flow, Screen States & Navigation
+**Depends on:** `01_PRD.md`, `05_Schema.md`
+**All UI copy is Bengali. All identifiers are English.**
+
+---
+
+## 1. Route Map (React Router v6)
+
+| Path | Component | Access | Purpose |
+|------|-----------|--------|---------|
+| `/` | `HomePage` | Public | Landing: Hero → About → Featured → Benefits → Testimonials → Inquiry → Footer |
+| `/products` | `ProductsPage` | Public | Full product grid + category filter |
+| `/products/:slug` | `ProductDetailPage` | Public | Product detail + order CTAs |
+| `/inquiry` | `InquiryPage` | Public | Standalone inquiry form |
+| `/thank-you` | `ThankYouPage` | Public | Post-submit confirmation |
+| `*` | `NotFoundPage` | Public | 404 in Bengali |
+
+**In-page anchors on `/`:** `#hero`, `#about`, `#products`, `#benefits`, `#testimonials`, `#inquiry`.
+
+---
+
+## 2. Global Navigation
+
+- **Header (sticky):** Logo → Nav links (হোম, পণ্যসমূহ, আমাদের সম্পর্কে, যোগাযোগ) → "অর্ডার করুন" CTA button → Theme toggle
+- **Scroll behavior:** transparent at top → solid `--color-surface` with `--shadow-md` after 40px scroll
+- **Mobile (< md):** hamburger → slide-in drawer with links + prominent WhatsApp CTA at bottom
+- **Footer:** address, phone (Bengali digits), WhatsApp, Facebook, copyright (Bengali)
+
+---
+
+## 3. Screen State Machines
+
+### 3.1 HomePage
+```
+MOUNT
+  └─► Parallel:
+       - fetchFeaturedProducts()
+       - fetchTestimonials(limit=3)
+       - fetchCategories()   // for future-proofing only
+  ├─ LOADING   → <SkeletonHero /> + <SkeletonCards count=3 />
+  ├─ SUCCESS   → render 7 sections in order
+  └─ ERROR     → render sections that don't need data + inline Bengali banner
+                 ("কিছু তথ্য লোড করতে সমস্যা হচ্ছে।")
+```
+
+**Section order (immutable):**
+1. `HeroSection` — H1, Bengali subhead, primary CTA "অর্ডার করুন" (scroll → `#inquiry`), secondary "পণ্য দেখুন" (→ `/products`)
+2. `AboutSection` — Bengali sourcing story + 3 trust badges (দেশি, কেমিক্যাল-মুক্ত, হাতে তৈরি)
+3. `FeaturedProductsSection` — top 3 (`is_featured=1`)
+4. `BenefitsSection` — 4 benefit cards
+5. `TestimonialsSection` — 3 latest, sorted `sort_order ASC`
+6. `InquirySection` — embedded `InquiryForm` (variant="inline")
+7. `Footer`
+
+### 3.2 ProductsPage
+```
+MOUNT
+  ├─► fetchCategories() → render filter pills
+  └─► fetchProducts(categoryId = null)
+  ├─ LOADING            → grid skeleton (6 cards)
+  ├─ SUCCESS + empty    → <EmptyState /> "কোনো পণ্য পাওয়া যায়নি"
+  ├─ SUCCESS + data     → grid
+  └─ ERROR              → <ErrorState retry={refetch} />
+```
+
+**Category filter:** pill buttons ("সব" + each category). Clicking triggers `setQueryData` and refetch.
+
+**Card click** → `navigate('/products/' + slug)`.
+
+### 3.3 ProductDetailPage
+```
+MOUNT
+  └─► fetchProductBySlug(slug)
+  ├─ LOADING  → detail skeleton
+  ├─ 404      → NotFoundPage
+  ├─ ERROR    → ErrorState with retry
+  └─ SUCCESS  → render:
+       - Image gallery (primary + thumbnails from images_json)
+       - Name (H1), weight (৫০০ গ্রাম), price (৳ ৪৮০ in Bengali numerals)
+       - Short desc
+       - Long desc (rich text as paragraphs)
+       - 3 CTAs:
+           "WhatsApp-এ অর্ডার করুন" → wa.me with prefilled Bengali text
+           "ফোনে অর্ডার" → tel:+88...
+           "অনুসন্ধান করুন" → /inquiry?product=<slug>
+```
+
+**WhatsApp template (Bengali, encoded):**
+```
+আসসালামু আলাইকুম। আমি "{name}" সম্পর্কে জানতে চাই। (পরিমাণ: __)
+```
+
+### 3.4 InquiryForm (embedded + standalone)
+**Fields:**
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `name` | text | ✓ | 2–120 chars |
+| `phone` | tel | ✓ | BD: `^01[3-9]\d{8}$` |
+| `email` | email | ✗ | Valid if present |
+| `product_id` | select | ✗ | from API |
+| `quantity` | number | ✗ | positive int ≤ 10000 |
+| `inquiry_type` | radio | ✓ | `retail` / `wholesale` |
+| `message` | textarea | ✗ | ≤ 500 chars |
+| `website` | hidden | — | honeypot, must be empty |
+| `cf_token` | hidden | ✗ | Turnstile (if enabled) |
+
+**State machine:**
+| State | Trigger | UI Behavior |
+|-------|---------|-------------|
+| `idle` | mount | Form ready, submit enabled |
+| `submitting` | submit | Submit disabled, spinner, "পাঠানো হচ্ছে…" |
+| `success` | HTTP 201 | Redirect `/thank-you` with `{ name }` state |
+| `validation_error` | HTTP 422 | Inline per-field Bengali errors |
+| `rate_limited` | HTTP 429 | Toast "অনেকবার চেষ্টা করেছেন। একটু পর আবার চেষ্টা করুন।" + 60s cooldown |
+| `server_error` | HTTP 5xx | Toast "সার্ভারে সমস্যা হয়েছে। WhatsApp-এ যোগাযোগ করুন।" + WA CTA |
+
+**Button actions:**
+| Button | Action |
+|--------|--------|
+| "অর্ডার করুন" | `handleSubmit(onSubmit)` |
+| "বাতিল করুন" | Reset form (confirm if dirty) |
+| "WhatsApp-এ যোগাযোগ" | `window.open(waLink, '_blank')` |
+
+### 3.5 ThankYouPage
+- Reads `location.state.name`. If missing → generic "ধন্যবাদ!"
+- Two CTAs: "হোমে ফিরে যান" (→ `/`), "WhatsApp-এ মেসেজ দিন" (→ wa.me)
+
+### 3.6 NotFoundPage
+- Display "৪০৪" in Bengali numerals
+- Headline: "পৃষ্ঠাটি খুঁজে পাওয়া যায়নি"
+- CTA: "হোমে ফিরে যান"
+
+---
+
+## 4. Navigation Actions (Button → Route / Behavior)
+
+| Button / Element | From | Action |
+|------------------|------|--------|
+| Logo | Any | `navigate('/')` |
+| "পণ্য দেখুন" | Hero | `navigate('/products')` |
+| "অর্ডার করুন" | Hero | `scrollIntoView('#inquiry')` |
+| Product card | Products | `navigate('/products/' + slug)` |
+| "WhatsApp-এ অর্ডার" | Product detail | `window.open(waLink(...))` |
+| "ফোনে অর্ডার" | Product detail | `window.location.href = 'tel:+8801XXXXXXXXX'` |
+| "অনুসন্ধান করুন" | Product detail | `navigate('/inquiry?product=' + slug)` |
+| Submit success | Inquiry | `navigate('/thank-you', { state: { name } })` |
+| Theme toggle | Header | Toggle `data-theme` on `<html>` + persist |
+
+---
+
+## 5. Mandatory Error & Empty States
+
+| Case | Screen | Treatment |
+|------|--------|-----------|
+| No products returned | Products | EmptyState "শীঘ্রই আসছে" with jaggery icon |
+| Filtered category empty | Products | "এই ক্যাটাগরিতে পণ্য নেই" |
+| Invalid slug | Product detail | Route to `NotFoundPage` |
+| Network error on fetch | Any data view | Bengali banner + retry button |
+| Form validation fail | Inquiry | Inline per-field Bengali errors |
+| Rate limit hit | Inquiry | Toast + disable submit 60s |
+| Server 5xx | Any | Toast + WhatsApp fallback |
+| Image load fail | Any image | Fallback gradient placeholder + jaggery icon |
+| Testimonials empty | Home | Hide section (no empty state needed) |
+
+---
+
+## 6. Scroll & Motion Rules
+- Smooth scroll only for in-page anchors (`#inquiry` from Hero)
+- Respect `prefers-reduced-motion`: disable all Framer Motion animations
+- Fade + 12px slide-up on section enter; stagger children by 60ms
+- **No parallax, no autoplay video, no scroll-jacking**
+
+---
+
+## 7. URL Query Parameters
+| Param | Page | Use |
+|-------|------|-----|
+| `?category=<slug>` | Products | Preserve filter state on reload |
+| `?product=<slug>` | Inquiry | Prefill product select |
+| `?utm_*` | Any | Forwarded to API in inquiry payload |
+````
+
+---
+
+## 📁 `docs/03_UI_Spec.md`
+
+````markdown
+# 03 — UI Specification & Design System
+**Brand tone:** Warm, premium, artisanal, trustworthy, Bengali-rooted
+**Tagline (brand):** প্রিমিয়াম দেশি গুড়ের ঠিকানা
+
+---
+
+## 1. Color Tokens (CSS variables in `src/styles/tokens.css`)
+
+### Light theme (default)
+```css
+--color-bg:            #FBF7F0;  /* warm cream */
+--color-surface:       #FFFDF9;  /* card */
+--color-surface-alt:   #F5EEE0;  /* skeleton / alt */
+--color-text:          #1A1613;  /* near-black brown */
+--color-text-muted:    #6B5F52;  /* taupe */
+--color-border:        #E7DECD;
+
+--color-brand-900:     #3D2817;  /* deepest brown — headings on light */
+--color-brand-800:     #5C3D22;
+--color-brand-700:     #7A4F2C;  /* PRIMARY — jaggery brown */
+--color-brand-600:     #9B6A3F;
+--color-brand-500:     #B8854F;
+--color-brand-400:     #D4A574;
+
+--color-accent-600:    #A8861E;
+--color-accent-500:    #C9A227;  /* gold — accents only */
+--color-accent-400:    #D4B84A;
+
+--color-success:       #2E7D5B;
+--color-warning:       #C9791E;
+--color-error:         #B33A2C;
+--color-whatsapp:      #25D366;
+
+--color-focus-ring:    #C9A227;
+```
+
+### Dark theme (`[data-theme="dark"]`)
+```css
+--color-bg:            #14110E;
+--color-surface:       #1F1B16;
+--color-surface-alt:   #2A251E;
+--color-text:          #F5EEE0;
+--color-text-muted:    #B7AA98;
+--color-border:        #332B24;
+
+--color-brand-700:     #D4A574;  /* flip so text-on-brand stays legible */
+--color-focus-ring:    #D4B84A;
+```
+
+### Hard rules
+- **CTA primary** = `bg: --color-brand-700`, `text: #FBF7F0`, hover `--color-brand-800`
+- **Gold** `--color-accent-500` is for **accents only** — never a button background on light theme
+- **Never hard-code hex in components** — always via CSS variable or Tailwind alias
+- **Contrast verified:** every text-on-bg pair ≥ 4.5:1 (small) or ≥ 3:1 (large)
+
+---
+
+## 2. Typography
+
+### Fonts (self-hosted, preloaded, `font-display: swap`)
+| Token | Family | Weights | Use |
+|-------|--------|---------|-----|
+| `--font-display` | `"Noto Serif Bengali"` | 500, 700, 800 | H1, H2, hero |
+| `--font-body` | `"Hind Siliguri"` | 400, 500, 600 | Body, forms, UI |
+| `--font-numeric` | `"Inter"` | 500, 700 | Prices in Latin (only inside `tel:`/`wa.me` URLs) |
+
+> **Numerals rule:** All user-facing prices, weights, dates MUST use Bengali numerals (০১২৩৪৫৬৭৮৯). Latin digits only inside `tel:` and `wa.me` URLs.
+
+### Scale (rem, base 16px)
+| Token | Size / LH | Weight | Use |
+|-------|-----------|--------|-----|
+| `text-xs` | 0.75 / 1.4 | 400 | Captions, legal |
+| `text-sm` | 0.875 / 1.5 | 400 | Helper, form hints |
+| `text-base` | 1.0 / 1.7 | 400 | Body |
+| `text-lg` | 1.125 / 1.7 | 500 | Lead paragraph |
+| `text-xl` | 1.25 / 1.6 | 600 | Card title |
+| `text-2xl` | 1.5 / 1.4 | 700 | Section subhead |
+| `text-3xl` | 1.875 / 1.3 | 700 | Section head |
+| `text-4xl` | 2.25 / 1.25 | 700 | H1 mobile |
+| `text-5xl` | 3.0 / 1.15 | 800 | H1 desktop |
+| `text-6xl` | 3.75 / 1.1 | 800 | Hero display |
+
+---
+
+## 3. Spacing Scale (4px base)
+`0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128`
+
+- **Section rhythm:** `py-16` (mobile) → `py-24` (desktop)
+- **Container:** `max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`
+- **Card gap:** `gap-6`
+
+---
+
+## 4. Radii & Shadows
+| Token | Value | Use |
+|-------|-------|-----|
+| `--radius-sm` | 6px | Inputs, small chips |
+| `--radius-md` | 12px | Cards, buttons |
+| `--radius-lg` | 20px | Hero media, modal |
+| `--radius-full` | 9999px | Pills, avatars |
+| `--shadow-sm` | `0 1px 2px rgba(26,22,19,.06)` | Card idle |
+| `--shadow-md` | `0 8px 24px rgba(61,40,23,.10)` | Card hover, sticky header |
+| `--shadow-lg` | `0 20px 48px rgba(61,40,23,.16)` | Modal, drawer |
+
+---
+
+## 5. Core Component States
+
+### 5.1 `Button`
+**Variants:** `primary`, `secondary`, `ghost`, `whatsapp` (green #25D366, white text)
+**Sizes:** `sm` (h-9, px-3, text-sm) · `md` (h-11, px-4, text-base) · `lg` (h-13, px-6, text-lg)
+
+| State | Treatment |
+|-------|-----------|
+| default | `--radius-md`, `shadow-sm` |
+| hover | darken 1 step + `translate-y-[-1px]`, `shadow-md` |
+| active | `translate-y-0`, `shadow-sm` |
+| focus-visible | 2px `--color-focus-ring`, offset 2px |
+| disabled | opacity 0.5, cursor not-allowed, no hover |
+| loading | spinner replaces icon, label "পাঠানো হচ্ছে…", disabled |
+
+### 5.2 `ProductCard`
+- Image 4:3, `object-cover`, `--radius-md`, `loading="lazy"`, `srcset` at 480/800/1200
+- Content padding: `p-4`
+- Name: `text-xl font-semibold`
+- Weight: `text-sm text-muted` (Bengali numerals: ৫০০ গ্রাম)
+- Price: `text-lg font-bold text-brand-700` (৳ ৪৮০)
+- Short desc: `text-sm`, 2-line clamp (`line-clamp-2`)
+- Hover: `shadow-md`, image `scale-105` over 300ms, `transition-transform`
+- Focusable wrapper with `aria-label` in Bengali
+
+### 5.3 `Input` / `Textarea` / `Select`
+- Height: `h-11` (input/select), `min-h-[8rem]` (textarea)
+- Border: `border --color-border`, `bg --color-surface`
+- Focus: `border-brand-700` + `ring-2 ring-accent-500/40`
+- Error: `border-error`, `text-error` helper below
+- Disabled: `opacity-60`, `cursor-not-allowed`
+- Label always above (never placeholder-only)
+
+### 5.4 `Toast` (via `sonner`)
+- Position: top-right desktop, top-center mobile
+- Auto-dismiss 5s, `role="status"`
+- Variants: success (green), error (red), warning (amber), info (neutral)
+
+### 5.5 `Skeleton`
+- `bg-surface-alt` + shimmer keyframe (2s infinite)
+- Used in every async view
+
+### 5.6 `EmptyState` / `ErrorState`
+- Centered, icon (lucide 40px), heading, subtext, optional action button
+- Uses `--color-text-muted` for supporting text
+
+### 5.7 `Badge`
+- Small pill, `text-xs`, `px-2 py-1`, `rounded-full`
+- Variants: `trust` (gold outline), `status` (success/warning/error)
+
+---
+
+## 6. Icons
+- **Library:** `lucide-react` (outline, 1.5px stroke)
+- **Sizes:** 16 / 20 / 24
+- **Color:** inherits `currentColor`
+- **Never** use emoji as primary iconography
+
+---
+
+## 7. Imagery
+- **Products:** 1200×900 (4:3), WebP + JPG fallback, `loading="lazy"`, `decoding="async"`
+- **Hero:** WebP < 180KB, `fetchpriority="high"`
+- **Alt text:** Bengali, descriptive (e.g., "দেশি পাটালি গুড়ের কাঠি")
+- **Fallback:** gradient `linear-gradient(135deg, #D4A574, #7A4F2C)` + jaggery icon
+
+---
+
+## 8. Motion (Framer Motion)
+- Fade + slide-up 12px, 400ms, `ease: [0.22, 1, 0.36, 1]`
+- Stagger children 60ms
+- `prefers-reduced-motion: reduce` → all durations 0ms, no transforms
+- **Never** animate `width`, `height`, `top`, `left` — use `transform`/`opacity` only
+
+---
+
+## 9. Responsive Breakpoints
+| Breakpoint | Width | Notes |
+|------------|-------|-------|
+| `sm` | 640px | 2-col product grid |
+| `md` | 768px | Inline nav appears, hero 2-col |
+| `lg` | 1024px | 3-col product grid |
+| `xl` | 1280px | Max container width |
+
+- **Grid:** 1 col < sm, 2 col sm–lg, 3 col ≥ lg
+- **Hero:** stacked < md, 2-col ≥ md
+
+---
+
+## 10. Accessibility (WCAG 2.1 AA)
+- `<html lang="bn">`
+- Focus rings always visible (never `outline: none` without replacement)
+- All interactive elements keyboard reachable (Tab, Enter, Space, Esc for modals)
+- Icon-only buttons have `aria-label` in Bengali
+- Form fields use `aria-describedby` for helper/error IDs
+- Skip-to-content link at top of `<body>`
+- Contrast verified per §1
+
+---
+
+## 11. Dark / Light Theme Rules
+- Default: **light**, respects `prefers-color-scheme` only if `localStorage['theme']` is unset
+- Toggle in Header sets `<html data-theme="dark|light">` + persists to `localStorage['theme']`
+- Toggle icon switches sun ↔ moon (lucide)
+- **Every** component must be variable-driven; hard-coded colors break dark mode
+- Images may receive `filter: brightness(0.9)` in dark mode if needed
+````
+
+---
+
+## 📁 `docs/04_TRD.md`
+
+````markdown
+# 04 — Technical Requirements Document (TRD)
+**Stack is LOCKED. Version change requires a "Change Log" entry in `06_Plan.md`.**
+
+---
+
+## 1. Tech Stack (LOCKED)
+
+### Frontend
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `node` | 20.18.x LTS | Runtime |
+| `pnpm` | 9.12.x | Package manager |
+| `vite` | 5.4.10 | Build tool |
+| `react` | 18.3.1 | UI library |
+| `react-dom` | 18.3.1 | DOM renderer |
+| `react-router-dom` | 6.26.2 | Routing |
+| `typescript` | 5.5.4 | Types (strict mode) |
+| `tailwindcss` | 3.4.13 | Utility CSS |
+| `postcss` | 8.4.47 | Post-processing |
+| `autoprefixer` | 10.4.20 | Vendor prefixes |
+| `@tanstack/react-query` | 5.56.2 | Server state |
+| `axios` | 1.7.7 | HTTP client |
+| `react-hook-form` | 7.53.0 | Form state |
+| `zod` | 3.23.8 | Validation schemas |
+| `@hookform/resolvers` | 3.9.0 | RHF + Zod bridge |
+| `framer-motion` | 11.5.4 | Animations |
+| `lucide-react` | 0.441.0 | Icons |
+| `clsx` | 2.1.1 | Class merging |
+| `tailwind-merge` | 2.5.2 | Tailwind class merge |
+| `sonner` | 1.5.0 | Toasts |
+
+### Backend
+| Component | Version |
+|-----------|---------|
+| PHP | 8.3.x (FPM) |
+| Extensions | `pdo_mysql`, `json`, `mbstring`, `openssl`, `fileinfo` |
+| Composer | 2.7.x |
+| `vlucas/phpdotenv` | 5.6.x |
+| `monolog/monolog` | 3.7.x |
+
+### Database
+- **MySQL 8.0.x** — InnoDB, `utf8mb4`, collation `utf8mb4_0900_ai_ci`
+- **Migrations:** raw SQL files in `/backend/database/migrations/`, executed via `php database/migrate.php`
+
+### DevOps
+- Frontend: static build → any CDN or Nginx
+- Backend: PHP-FPM behind Nginx on subpath `/api`
+- Env via `.env` (never committed)
+
+---
+
+## 2. Folder Structure (LOCKED)
+
+```
+food-ghor/
+├── docs/                          # 6-doc architecture (READ FIRST)
+├── AI_STUDIO_SYSTEM_PROMPT.md    # Primary agent config
+├── CLAUDE.md                      # Portable agent config (Claude Code)
+├── .cursorrules                   # Portable agent config (Cursor)
+├── README.md
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── index.html                 # <html lang="bn">
+│   ├── public/
+│   │   └── favicon.svg
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx
+│       ├── router.tsx
+│       ├── styles/
+│       │   ├── tokens.css
+│       │   ├── fonts.css
+│       │   └── index.css
+│       ├── content/
+│       │   └── bn.ts              # ALL Bengali copy
+│       ├── lib/
+│       │   ├── api.ts             # axios instance
+│       │   ├── queryClient.ts
+│       │   ├── format.ts          # toBengaliNumerals, formatBDT
+│       │   └── whatsapp.ts        # waLink()
+│       ├── types/
+│       │   └── index.ts
+│       ├── hooks/
+│       │   ├── useProducts.ts
+│       │   ├── useProduct.ts
+│       │   ├── useCategories.ts
+│       │   ├── useTestimonials.ts
+│       │   ├── useInquiry.ts
+│       │   └── useTheme.ts
+│       ├── components/
+│       │   ├── ui/                # Button, Input, Card, Toast, Skeleton…
+│       │   ├── layout/            # Header, Footer, Container, Section
+│       │   └── sections/          # Hero, About, Products, Benefits…
+│       └── pages/
+│           ├── HomePage.tsx
+│           ├── ProductsPage.tsx
+│           ├── ProductDetailPage.tsx
+│           ├── InquiryPage.tsx
+│           ├── ThankYouPage.tsx
+│           └── NotFoundPage.tsx
+├── backend/
+│   ├── composer.json
+│   ├── .env.example
+│   ├── public/
+│   │   └── index.php              # front controller
+│   ├── database/
+│   │   ├── migrations/            # 0001_… through 0008_…
+│   │   ├── seeds/
+│   │   └── migrate.php
+│   └── src/
+│       ├── Config/{Env,Db,Config}.php
+│       ├── Http/{Request,Response,Router}.php
+│       ├── Middleware/{Cors,RateLimit,Csrf,Auth,JsonBody}.php
+│       ├── Controllers/{Product,Category,Testimonial,Inquiry,Auth,AdminProduct,AdminInquiry,Health}Controller.php
+│       ├── Models/{Product,Category,Testimonial,Inquiry,AdminUser,AuditLog}.php
+│       ├── Services/{Mailer,WhatsappLink}.php
+│       └── Support/{Validator,Logger,Numerals}.php
+```
+
+---
+
+## 3. Third-party APIs & Integrations
+
+| Integration | Purpose | Key Required | Notes |
+|-------------|---------|--------------|-------|
+| **WhatsApp deep link** | Order intent | No | `https://wa.me/<number>?text=<encoded>` |
+| **Cloudflare Turnstile** (optional) | Bot protection on inquiry | Yes (`TURNSTILE_SECRET`) | Verified server-side via `https://challenges.cloudflare.com/turnstile/v0/siteverify` |
+| **Privacy-first analytics** (optional) | Plausible or Umami | Yes (self-hosted or cloud) | No GA, no Meta Pixel by default |
+
+No other third-party APIs in v1.
+
+---
+
+## 4. API Contract (v1)
+
+**Base URL:** `https://<host>/api/v1`
+
+### Public endpoints
+| Method | Path | Response |
+|--------|------|----------|
+| GET | `/health` | `{ data: { ok, time } }` |
+| GET | `/products?category=&featured=1&limit=&offset=` | `{ data: Product[] }` |
+| GET | `/products/:slug` | `{ data: Product }` or 404 |
+| GET | `/categories` | `{ data: Category[] }` |
+| GET | `/testimonials?limit=` | `{ data: Testimonial[] }` |
+| POST | `/inquiries` | 201 `{ data: { id } }` / 422 / 429 |
+
+### Admin endpoints (session cookie required)
+| Method | Path |
+|--------|------|
+| POST | `/admin/login` |
+| POST | `/admin/logout` |
+| GET | `/admin/me` |
+| GET/POST/PATCH/DELETE | `/admin/products[/:id]` |
+| GET/POST/PATCH/DELETE | `/admin/categories[/:id]` |
+| GET/POST/PATCH/DELETE | `/admin/testimonials[/:id]` |
+| GET | `/admin/inquiries?status=` |
+| PATCH | `/admin/inquiries/:id` |
+
+### Response envelope (LOCKED — no exceptions)
+
+**Success:**
+```json
+{ "data": <payload>, "meta": {}, "error": null }
+```
+
+**Error:**
+```json
+{
+  "data": null,
+  "meta": {},
+  "error": {
+    "code": "VALIDATION_ERROR | NOT_FOUND | RATE_LIMITED | SERVER_ERROR | UNAUTHORIZED | FORBIDDEN",
+    "message": "human-readable, English (server-side)",
+    "fields": { "phone": "invalid_format" }
+  }
+}
+```
+
+---
+
+## 5. Security Constraints (NON-NEGOTIABLE)
+
+1. **HTTPS only.** HSTS header (max-age 31536000).
+2. **PDO prepared statements everywhere.** No string interpolation in SQL.
+3. **Passwords:** `password_hash($p, PASSWORD_ARGON2ID)`, `password_verify()` on login.
+4. **Sessions:** `session.cookie_httponly=1`, `session.cookie_secure=1`, `session.cookie_samesite=Strict`, `session.use_strict_mode=1`, regenerate ID on login/logout.
+5. **CSRF:** double-submit token. Server sets `fg_csrf` cookie (readable by JS); client sends `X-CSRF-Token` header; middleware compares.
+6. **CORS:** allow-list `APP_FRONTEND_ORIGIN` only; `credentials: true`.
+7. **Rate limiting:** per-IP, per-endpoint. `POST /inquiries` = 5 per 15 min. `POST /admin/login` = 5 per 15 min. Stored in `rate_limit_hits`.
+8. **Input validation:** whitelist schema on every POST/PATCH. Reject unknown fields.
+9. **Output escaping:** React auto-escapes. **Never** use `dangerouslySetInnerHTML` with API content.
+10. **Secrets:** `.env` only. `.gitignore` covers it. `.env.example` committed.
+11. **Headers:** `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), microphone=(), camera=()`.
+12. **File uploads:** admin only; validate MIME + extension + size (≤ 5MB); store outside web root; random filenames.
+13. **Logging:** never log passwords, CSRF tokens, or full inquiry bodies.
+14. **Errors:** `APP_ENV=production` → no stack traces in responses.
+15. **Password rotation:** seed admin from `SEED_ADMIN_PASSWORD` env, force change on first login (Phase 2 milestone).
+
+---
+
+## 6. Performance Budgets
+| Item | Budget |
+|------|--------|
+| Initial JS (gz) | ≤ 200 KB |
+| Initial CSS (gz) | ≤ 40 KB |
+| Hero image | ≤ 180 KB |
+| LCP (4G mobile) | ≤ 2.5s |
+| CLS | ≤ 0.05 |
+| TTFB (API) | ≤ 200ms |
+| API p95 (inquiry POST) | ≤ 300ms |
+
+---
+
+## 7. Environment Variables (`.env.example`)
+
+**Backend (`backend/.env.example`):**
+```
+APP_ENV=production
+APP_FRONTEND_ORIGIN=https://foodghor.example
+APP_WHATSAPP_NUMBER=8801XXXXXXXXX
+APP_PHONE_DISPLAY=+৮৮০ ১XXX-XXXXXX
+
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=foodghor
+DB_USER=foodghor_app
+DB_PASS=__change_me__
+
+SESSION_SECRET=__change_me__
+CSRF_SECRET=__change_me__
+TURNSTILE_SECRET=__optional__
+SEED_ADMIN_PASSWORD=__dev_only__
+```
+
+**Frontend (`frontend/.env.example`):**
+```
+VITE_API_BASE_URL=https://foodghor.example/api/v1
+VITE_WHATSAPP_NUMBER=8801XXXXXXXXX
+```
+````
+
+---
+
+## 📁 `docs/05_Schema.md`
+
+````markdown
+# 05 — Database Schema, Indexes & Auth Flow
+**Engine:** MySQL 8.0 · InnoDB · `utf8mb4` · collation `utf8mb4_0900_ai_ci`
+**All `*_bn` columns store Bengali UTF-8 text. All identifiers English.**
+
+---
+
+## 1. ER Overview
+
+```
+admin_users 1 ──< audit_log
+categories  1 ──< products
+products    1 ──< inquiries (nullable FK)
+testimonials (standalone)
+site_settings (key-value)
+rate_limit_hits (standalone)
+```
+
+---
+
+## 2. Tables
+
+### 2.1 `admin_users`
+```sql
+CREATE TABLE IF NOT EXISTS admin_users (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  email         VARCHAR(190)    NOT NULL,
+  password_hash VARCHAR(255)    NOT NULL,
+  display_name  VARCHAR(100)    NOT NULL,
+  role          ENUM('owner','editor') NOT NULL DEFAULT 'editor',
+  is_active     TINYINT(1)      NOT NULL DEFAULT 1,
+  must_change_pw TINYINT(1)     NOT NULL DEFAULT 0,
+  last_login_at DATETIME        NULL,
+  created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admin_users_email (email)
+) ENGINE=InnoDB;
+```
+
+### 2.2 `categories`
+```sql
+CREATE TABLE IF NOT EXISTS categories (
+  id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  slug           VARCHAR(120)    NOT NULL,
+  name_bn        VARCHAR(120)    NOT NULL,
+  description_bn TEXT            NULL,
+  sort_order     INT             NOT NULL DEFAULT 0,
+  is_active      TINYINT(1)      NOT NULL DEFAULT 1,
+  created_at     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                 ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_categories_slug (slug),
+  KEY idx_categories_active_sort (is_active, sort_order)
+) ENGINE=InnoDB;
+```
+
+### 2.3 `products`
+```sql
+CREATE TABLE IF NOT EXISTS products (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  category_id   BIGINT UNSIGNED NOT NULL,
+  slug          VARCHAR(140)    NOT NULL,
+  name_bn       VARCHAR(160)    NOT NULL,
+  short_desc_bn VARCHAR(280)    NOT NULL,
+  long_desc_bn  TEXT            NULL,
+  price_bdt     DECIMAL(10,2)   NOT NULL,
+  weight_grams  INT             NULL,
+  stock_status  ENUM('in_stock','out_of_stock','preorder')
+                                NOT NULL DEFAULT 'in_stock',
+  image_primary VARCHAR(500)    NOT NULL,
+  images_json   JSON            NULL,
+  is_featured   TINYINT(1)      NOT NULL DEFAULT 0,
+  is_active     TINYINT(1)      NOT NULL DEFAULT 1,
+  meta_title_bn VARCHAR(160)    NULL,
+  meta_desc_bn  VARCHAR(320)    NULL,
+  created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_products_slug (slug),
+  KEY idx_products_category (category_id, is_active),
+  KEY idx_products_featured (is_featured, is_active),
+  CONSTRAINT fk_products_category FOREIGN KEY (category_id)
+    REFERENCES categories(id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+```
+
+### 2.4 `testimonials`
+```sql
+CREATE TABLE IF NOT EXISTS testimonials (
+  id                   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  customer_name_bn     VARCHAR(120)    NOT NULL,
+  customer_location_bn VARCHAR(120)    NULL,
+  quote_bn             VARCHAR(500)    NOT NULL,
+  rating               TINYINT UNSIGNED NOT NULL DEFAULT 5,
+  avatar_url           VARCHAR(500)    NULL,
+  sort_order           INT             NOT NULL DEFAULT 0,
+  is_active            TINYINT(1)      NOT NULL DEFAULT 1,
+  created_at           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_testimonials_active_sort (is_active, sort_order),
+  CONSTRAINT chk_testimonials_rating CHECK (rating BETWEEN 1 AND 5)
+) ENGINE=InnoDB;
+```
+
+### 2.5 `inquiries`
+```sql
+CREATE TABLE IF NOT EXISTS inquiries (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(120)    NOT NULL,
+  phone         VARCHAR(20)     NOT NULL,
+  email         VARCHAR(190)    NULL,
+  product_id    BIGINT UNSIGNED NULL,
+  quantity      INT             NULL,
+  inquiry_type  ENUM('retail','wholesale') NOT NULL DEFAULT 'retail',
+  message       VARCHAR(500)    NULL,
+  source_page   VARCHAR(120)    NULL,
+  utm_source    VARCHAR(120)    NULL,
+  utm_medium    VARCHAR(120)    NULL,
+  utm_campaign  VARCHAR(120)    NULL,
+  ip_address    VARBINARY(16)   NULL,
+  user_agent    VARCHAR(500)    NULL,
+  status        ENUM('new','contacted','converted','closed')
+                                NOT NULL DEFAULT 'new',
+  notes         TEXT            NULL,
+  created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_inquiries_status_created (status, created_at),
+  KEY idx_inquiries_created (created_at),
+  KEY idx_inquiries_product (product_id),
+  CONSTRAINT fk_inquiries_product FOREIGN KEY (product_id)
+    REFERENCES products(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+```
+
+### 2.6 `site_settings`
+```sql
+CREATE TABLE IF NOT EXISTS site_settings (
+  setting_key  VARCHAR(80) NOT NULL,
+  value_json   JSON        NOT NULL,
+  updated_at   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
+                           ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (setting_key)
+) ENGINE=InnoDB;
+```
+
+### 2.7 `audit_log`
+```sql
+CREATE TABLE IF NOT EXISTS audit_log (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  actor_id      BIGINT UNSIGNED NULL,
+  action        VARCHAR(80)     NOT NULL,
+  entity        VARCHAR(80)     NOT NULL,
+  entity_id     BIGINT UNSIGNED NULL,
+  metadata_json JSON            NULL,
+  ip_address    VARBINARY(16)   NULL,
+  created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_audit_actor (actor_id, created_at),
+  KEY idx_audit_entity (entity, entity_id),
+  CONSTRAINT fk_audit_actor FOREIGN KEY (actor_id)
+    REFERENCES admin_users(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+```
+
+### 2.8 `rate_limit_hits`
+```sql
+CREATE TABLE IF NOT EXISTS rate_limit_hits (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  ip_address VARBINARY(16)   NOT NULL,
+  endpoint   VARCHAR(120)    NOT NULL,
+  hit_at     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_rl_lookup (ip_address, endpoint, hit_at),
+  KEY idx_rl_cleanup (hit_at)
+) ENGINE=InnoDB;
+```
+
+**Cron (daily):** `DELETE FROM rate_limit_hits WHERE hit_at < NOW() - INTERVAL 1 DAY;`
+
+---
+
+## 3. Authentication Flow
+
+### 3.1 Admin (session-based)
+```
+POST /admin/login { email, password }
+  ├─ RateLimitMiddleware.check('login', ip)  → 429 if exceeded
+  ├─ DB: SELECT * FROM admin_users WHERE email=? AND is_active=1
+  ├─ password_verify(password, hash) — Argon2id
+  ├─ On success:
+  │    session_regenerate_id(true)
+  │    $_SESSION['admin_id'] = id
+  │    $_SESSION['role']     = role
+  │    Set-Cookie: fg_session (HttpOnly, Secure, SameSite=Strict)
+  │    Set-Cookie: fg_csrf    (non-HttpOnly, SameSite=Strict)
+  │    UPDATE admin_users SET last_login_at = NOW()
+  │    INSERT INTO audit_log (action='login', actor_id, ip)
+  │    return { data: { id, email, role, must_change_pw } }
+  └─ On failure → 401 + generic message (never leak "email not found")
+```
+
+All `/admin/*` routes pass through `AuthMiddleware`:
+- Session valid? → attach `$_SESSION` to request context
+- Else → 401 `UNAUTHORIZED`
+
+### 3.2 Public inquiry flow
+```
+POST /inquiries { name, phone, email?, product_id?, quantity?, inquiry_type, message?, website, cf_token? }
+  ├─ Honeypot `website` non-empty → 400
+  ├─ RateLimitMiddleware.check('inquiries', ip) → 429
+  ├─ Validator.validate(schema) → 422 with field errors
+  ├─ (Optional) verify Turnstile token
+  ├─ INSERT INTO inquiries (…, status='new')
+  ├─ Mailer.notifyOwner(…)
+  ├─ INSERT INTO audit_log (action='inquiry_created', entity='inquiry', entity_id)
+  └─ 201 { data: { id } }
+```
+
+### 3.3 CSRF flow
+- Server generates `csrf_token = bin2hex(random_bytes(32))` per session
+- Sends as `fg_csrf` cookie (JS-readable, `SameSite=Strict`)
+- Client stores in memory on app boot; Axios interceptor injects `X-CSRF-Token`
+- `CsrfMiddleware` compares header to session token on all `POST/PATCH/DELETE`
+- Mismatch → 403 `FORBIDDEN`
+
+---
+
+## 4. Row-Level Access Control (RLS-equivalent)
+
+> **MySQL 8 has no native RLS. We implement RLS-equivalent in application middleware + DB user privileges.**
+
+### 4.1 DB-level (SQL grants)
+```sql
+-- App user: scoped privileges
+GRANT SELECT, INSERT, UPDATE, DELETE
+  ON foodghor.products, foodghor.categories, foodghor.testimonials,
+     foodghor.inquiries, foodghor.site_settings,
+     foodghor.rate_limit_hits, foodghor.audit_log
+  TO 'foodghor_app'@'localhost';
+
+-- Read-only on admin_users (no direct create/delete via app)
+GRANT SELECT, UPDATE(last_login_at, must_change_pw, password_hash)
+  ON foodghor.admin_users
+  TO 'foodghor_app'@'localhost';
+```
+
+### 4.2 Application-level (enforced in `Middleware/Auth.php`)
+
+| Role | Permissions |
+|------|-------------|
+| **anonymous** | `GET` on public routes · `POST /inquiries` |
+| **editor** | Everything above + full CRUD on products, categories, testimonials · update `status`/`notes` on inquiries · **cannot** touch `admin_users`, `site_settings`, or `audit_log` |
+| **owner** | Everything editors can + read `audit_log` · manage `site_settings` · (provisioning of new admins is CLI-only) |
+
+### 4.3 Row-visibility rules
+- Public product queries: **always** `WHERE is_active = 1`
+- Public category queries: **always** `WHERE is_active = 1`
+- Public testimonial queries: **always** `WHERE is_active = 1`
+- Admin queries: see all rows
+
+### 4.4 Audit integrity
+- `audit_log` is **append-only**. `DELETE` and `UPDATE` on this table are forbidden at the controller level even for `owner`.
+- Editors mutating a row record `actor_id` + before/after diff in `metadata_json`.
+
+**These rules MUST be enforced server-side. Never trust the frontend.**
+
+---
+
+## 5. Indexes Summary
+
+All indexes are declared inline in §2. Additional optional phase-2:
+```sql
+ALTER TABLE products ADD FULLTEXT ft_products_search (name_bn, short_desc_bn);
+```
+
+---
+
+## 6. Migration Rules
+
+- **Idempotent:** every DDL uses `CREATE TABLE IF NOT EXISTS`.
+- **Immutable once merged:** edits require a new migration file.
+- **Lexical order:** `migrate.php` executes files in lexical order.
+- **Idempotent seeds:** seeds only insert if the target table is empty.
+- **Admin seed:** requires `SEED_ADMIN_PASSWORD` env var (dev only); fails loudly if missing.
+````
+
+---
+
+## 📁 `docs/06_Plan.md`
+
+````markdown
+# 06 — Implementation Plan (Atomic · Dependency-Ordered)
+**Binding rule for the AI agent:** After completing **any** step, edit this file in place:
+1. Flip `- [ ]` → `- [x]`
+2. Append `  <!-- DONE: <ISO-8601 UTC> -->` on the next line
+3. Include this file's update in the **same commit** as the code change
+4. If a step is blocked, add `⛔ BLOCKED:` + reason and stop; do not skip ahead
+
+---
+
+## Phase 0 — Bootstrap (Day 0)
+
+- [ ] **0.1** Create `frontend/`, `backend/`, `docs/` at repo root (docs already populated).
+- [ ] **0.2** Scaffold `frontend/` with `pnpm create vite frontend --template react-ts`.
+- [ ] **0.3** Install frontend deps **exactly** per `04_TRD.md §1`: `pnpm add react-router-dom@6.26.2 @tanstack/react-query@5.56.2 axios@1.7.7 react-hook-form@7.53.0 zod@3.23.8 @hookform/resolvers@3.9.0 framer-motion@11.5.4 lucide-react@0.441.0 clsx@2.1.1 tailwind-merge@2.5.2 sonner@1.5.0` and `pnpm add -D tailwindcss@3.4.13 postcss@8.4.47 autoprefixer@10.4.20`.
+- [ ] **0.4** Run `pnpm dlx tailwindcss init -p` inside `frontend/`.
+- [ ] **0.5** Init backend: `composer init` with PSR-4 autoload `FoodGhor\` → `src/`.
+- [ ] **0.6** Install backend deps: `composer require vlucas/phpdotenv:^5.6 monolog/monolog:^3.7`.
+- [ ] **0.7** Create `frontend/.env.example` and `backend/.env.example` exactly per `04_TRD.md §7`.
+- [ ] **0.8** Create root `.gitignore` covering `node_modules/`, `vendor/`, `.env`, `dist/`, `.DS_Store`.
+
+---
+
+## Phase 1 — Database & Auth (Day 1)
+
+### Migrations
+- [ ] **1.1** `0001_create_admin_users.sql`
+- [ ] **1.2** `0002_create_categories.sql`
+- [ ] **1.3** `0003_create_products.sql`
+- [ ] **1.4** `0004_create_testimonials.sql`
+- [ ] **1.5** `0005_create_inquiries.sql`
+- [ ] **1.6** `0006_create_site_settings.sql`
+- [ ] **1.7** `0007_create_audit_log.sql`
+- [ ] **1.8** `0008_create_rate_limit_hits.sql`
+- [ ] **1.9** Implement `backend/database/migrate.php` (lexical order, try/catch, Monolog logging).
+
+### Seeds
+- [ ] **1.10** `seeds/admin_user.sql` (uses `SEED_ADMIN_PASSWORD` via CLI interpolation).
+- [ ] **1.11** `seeds/categories.sql` (3 Bengali categories: পাটালি গুড়, নলেন গুড়, খেজুর গুড়).
+- [ ] **1.12** `seeds/products.sql` (3 Bengali products, 1 featured).
+
+### Bootstrap code
+- [ ] **1.13** `Config/Env.php` (phpdotenv loader).
+- [ ] **1.14** `Config/Config.php` (typed accessors).
+- [ ] **1.15** `Config/Db.php` (PDO singleton, `utf8mb4`, `ERRMODE_EXCEPTION`).
+- [ ] **1.16** `Http/Request.php` (query/body/ip/headers).
+- [ ] **1.17** `Http/Response.php` (JSON envelope per `04_TRD.md §4`).
+- [ ] **1.18** `Http/Router.php` (method+path matching, param extraction).
+- [ ] **1.19** `Middleware/Cors.php`.
+- [ ] **1.20** `Middleware/JsonBody.php`.
+- [ ] **1.21** `Middleware/Auth.php` (session-based + role guard).
+- [ ] **1.22** `Middleware/Csrf.php`.
+- [ ] **1.23** `AuthController` (`login`, `logout`, `me`).
+- [ ] **1.24** Wire `public/index.php` with route table for Phase 1.
+- [ ] **1.25** **Verification:** Login → `/admin/me` returns user → logout clears session. Create `backend/tests/smoke.http`.
+
+---
+
+## Phase 2 — Core API (Day 2)
+
+- [ ] **2.1** `Support/Validator.php` (whitelist schemas + Bengali error codes).
+- [ ] **2.2** `Support/Logger.php` (Monolog, structured JSON, no PII in inquiry logs).
+- [ ] **2.3** `Middleware/RateLimit.php` (SQL counter on `rate_limit_hits`).
+- [ ] **2.4** `ProductController@index` (`category`, `featured`, pagination).
+- [ ] **2.5** `ProductController@show` (by slug, `is_active=1`).
+- [ ] **2.6** `CategoryController@index`.
+- [ ] **2.7** `TestimonialController@index`.
+- [ ] **2.8** `InquiryController@store` (honeypot → rate limit → validate → Turnstile → insert → mailer → audit).
+- [ ] **2.9** `Services/Mailer.php` (PHP `mail()` or SMTP via Monolog-SMTP; configurable).
+- [ ] **2.10** `Services/WhatsappLink.php` (server-side generator — used for templates).
+- [ ] **2.11** `AdminProductController` (list/create/update/delete).
+- [ ] **2.12** `AdminCategoryController`.
+- [ ] **2.13** `AdminTestimonialController`.
+- [ ] **2.14** `AdminInquiryController@index`, `@update` (status/notes only).
+- [ ] **2.15** `HealthController@index`.
+- [ ] **2.16** Wire all routes in `public/index.php`.
+- [ ] **2.17** **Verification:** Smoke-test every endpoint in `tests/smoke.http`.
+
+---
+
+## Phase 3 — UI Integration (Days 3–4)
+
+### Foundation
+- [ ] **3.1** `src/styles/tokens.css` — every token from `03_UI_Spec.md §1–4`.
+- [ ] **3.2** `src/styles/fonts.css` — `@font-face` for Noto Serif Bengali, Hind Siliguri, Inter.
+- [ ] **3.3** `tailwind.config.ts` — extend theme with token aliases.
+- [ ] **3.4** `src/content/bn.ts` — **all** Bengali copy, typed, exported as const.
+- [ ] **3.5** `lib/api.ts` (axios + CSRF interceptor + baseURL from `VITE_API_BASE_URL`).
+- [ ] **3.6** `lib/queryClient.ts` (staleTime 60s, retry 1).
+- [ ] **3.7** `lib/format.ts` (`toBengaliNumerals`, `formatBDT`).
+- [ ] **3.8** `lib/whatsapp.ts` (`waLink(number, message)`).
+- [ ] **3.9** `types/index.ts` — `Product`, `Category`, `Testimonial`, `InquiryPayload`, `ApiResponse`.
+
+### UI primitives
+- [ ] **3.10** `components/ui/Button.tsx` (4 variants, 3 sizes, all states).
+- [ ] **3.11** `components/ui/Input.tsx`, `Textarea.tsx`, `Select.tsx`.
+- [ ] **3.12** `components/ui/Card.tsx`, `Badge.tsx`.
+- [ ] **3.13** `components/ui/Skeleton.tsx`, `EmptyState.tsx`, `ErrorState.tsx`.
+- [ ] **3.14** `components/ui/Toast.tsx` (wraps `sonner`).
+
+### Layout
+- [ ] **3.15** `components/layout/Container.tsx`, `Section.tsx`.
+- [ ] **3.16** `components/layout/Header.tsx` (sticky + mobile drawer + theme toggle).
+- [ ] **3.17** `components/layout/Footer.tsx`.
+- [ ] **3.18** `components/layout/SkipToContent.tsx`.
+
+### Routing & hooks
+- [ ] **3.19** `router.tsx` (all routes from `02_AppFlow.md §1`).
+- [ ] **3.20** `hooks/useProducts.ts`, `useProduct.ts`, `useCategories.ts`, `useTestimonials.ts`, `useInquiry.ts`.
+- [ ] **3.21** `hooks/useTheme.ts` (localStorage + `prefers-color-scheme` fallback).
+
+### Sections & pages
+- [ ] **3.22** `components/sections/HeroSection.tsx`.
+- [ ] **3.23** `components/sections/AboutSection.tsx`.
+- [ ] **3.24** `components/sections/FeaturedProductsSection.tsx`.
+- [ ] **3.25** `components/sections/BenefitsSection.tsx`.
+- [ ] **3.26** `components/sections/TestimonialsSection.tsx`.
+- [ ] **3.27** `components/sections/InquirySection.tsx` (embed).
+- [ ] **3.28** `components/forms/InquiryForm.tsx` (RHF + Zod; all states per `02_AppFlow.md §3.4`).
+- [ ] **3.29** `pages/HomePage.tsx`.
+- [ ] **3.30** `pages/ProductsPage.tsx`.
+- [ ] **3.31** `pages/ProductDetailPage.tsx`.
+- [ ] **3.32** `pages/InquiryPage.tsx`.
+- [ ] **3.33** `pages/ThankYouPage.tsx`.
+- [ ] **3.34** `pages/NotFoundPage.tsx`.
+
+### Polish
+- [ ] **3.35** Framer Motion enter animations (respect `prefers-reduced-motion`).
+- [ ] **3.36** SEO: per-route `<title>` + meta + OG + JSON-LD (`Product`, `LocalBusiness`).
+- [ ] **3.37** Wire `main.tsx` + `App.tsx` + `QueryClientProvider` + `Toaster`.
+- [ ] **3.38** **Verification:** All pages render live API data in Bengali numerals; theme toggle persists.
+
+---
+
+## Phase 4 — Edge Cases & QA (Day 5)
+
+- [ ] **4.1** Rate limit test: 6 rapid POSTs to `/inquiries` → 429 + Bengali toast.
+- [ ] **4.2** CSRF test: POST without `X-CSRF-Token` → 403.
+- [ ] **4.3** XSS test: inquiry `message` = `<script>alert(1)</script>` → escaped, no execution.
+- [ ] **4.4** SQLi test: `?category=' OR 1=1 --` → 400 or empty, no error leak.
+- [ ] **4.5** Honeypot test: fill `website` → 400.
+- [ ] **4.6** Empty states: Products (no data), Category filter (empty), NotFound.
+- [ ] **4.7** Loading states: DevTools slow-3G → skeletons, no CLS.
+- [ ] **4.8** Responsive: 320, 375, 414, 768, 1024, 1440px — no horizontal scroll.
+- [ ] **4.9** Bengali typography audit: prices, weights, dates use Bengali numerals.
+- [ ] **4.10** Dark mode pass: every page, every form state, every card.
+- [ ] **4.11** Lighthouse Mobile: Perf ≥ 90, A11y ≥ 95, Best Practices ≥ 95, SEO ≥ 95.
+- [ ] **4.12** Keyboard-only navigation: Header → Products → Inquiry form → Submit.
+- [ ] **4.13** WhatsApp deep link opens with prefilled Bengali on iOS Safari + Android Chrome.
+- [ ] **4.14** `tel:` link dials correctly on mobile.
+- [ ] **4.15** Production build clean: `pnpm build` + `composer install --no-dev` → no TS or ESLint errors.
+
+---
+
+## Phase 5 — Deploy (Day 6)
+
+- [ ] **5.1** All Phase 4 tests green on staging.
+- [ ] **5.2** Production `.env` set (frontend + backend).
+- [ ] **5.3** Run migrations + seeds on prod DB.
+- [ ] **5.4** HTTPS + HSTS configured.
+- [ ] **5.5** CORS allow-list locked to prod origin.
+- [ ] **5.6** Rebuild frontend with prod `VITE_API_BASE_URL`.
+- [ ] **5.7** `/api/v1/health` responds 200.
+- [ ] **5.8** One real end-to-end inquiry from a phone submitted successfully.
+- [ ] **5.9** Owner credentials handed off out-of-band.
+
+---
+
+## Change Log
+_(Append architectural deviations here with date + reason + approval)_
+
+---
+
+## Update Protocol (BINDING)
+After completing any step:
+1. `- [ ]` → `- [x]`
+2. Append `  <!-- DONE: 2025-…T…Z -->`
+3. Commit code + this file together: `feat(<phase>.<step>): <summary>`
+4. If architectural ambiguity: **stop**, log under Change Log, await human confirmation.
+````
+
+---
+
+## 📁 `AI_STUDIO_SYSTEM_PROMPT.md`
+### *(Primary agent config — paste this into Google AI Studio's "System Instructions" field)*
+
+````markdown
+# SYSTEM INSTRUCTIONS — Food Ghor Coding Agent (Google AI Studio / Gemini)
+
+You are the primary coding agent for **Food Ghor (ফুড ঘর)** — a Bengali-first premium jaggery landing page built with **React + Vite + TypeScript**, **PHP 8.3**, and **MySQL 8.0**.
+
+## 0. CONTEXT ARCHITECTURE — READ BEFORE ANY TASK
+
+The following six documents are attached to this session as context files (in `/docs/`). **Before you write, modify, or suggest a single line of code, you MUST read all six in this exact order:**
+
+1. `docs/01_PRD.md` — product intent, personas, user stories, non-goals
+2. `docs/02_AppFlow.md` — routes, state machines, navigation actions
+3. `docs/03_UI_Spec.md` — design tokens, typography, component states
+4. `docs/04_TRD.md` — locked stack, folder tree, API contract, security
+5. `docs/05_Schema.md` — DB schema, indexes, auth flow, RLS-equivalent
+6. `docs/06_Plan.md` — atomic implementation checklist (source of truth for **current work**)
+
+Then:
+- Locate the **first unchecked step** in `06_Plan.md`.
+- Scope your work to that step + its direct dependencies only.
+- Do **not** jump ahead in the plan.
+
+If any doc is missing or empty, **stop** and report. Do not improvise architecture.
+
+---
+
+## 1. NON-NEGOTIABLE RULES
+
+1. **Bengali-only user-facing copy.** All Bengali strings live in `frontend/src/content/bn.ts`. Never inline Bengali in components. Never introduce English into the visible UI (exceptions: brand "Food Ghor", phone digits, `৳`).
+2. **Bengali numerals** (০১২৩৪৫৬৭৮৯) for prices, weights, dates. Latin digits only inside `tel:` and `wa.me` URLs.
+3. **Code identifiers in English.** Variables, functions, DB columns, routes, API paths, types.
+4. **Stack is LOCKED.** Do not add or upgrade dependencies without an explicit "Change Log" approval in `06_Plan.md`.
+5. **Design tokens only.** No hard-coded hex, font-family, or spacing. Reference `03_UI_Spec.md` tokens via Tailwind aliases or CSS variables.
+6. **API envelope is fixed** per `04_TRD.md §4`. No exceptions.
+7. **Every state-changing endpoint requires:** CSRF token, rate limit, server-side validation.
+8. **SQL:** PDO prepared statements only. No string interpolation.
+9. **React:** never use `dangerouslySetInnerHTML` with API content.
+10. **Non-goals are absolute.** No customer accounts, no cart, no checkout, no payments, no English UI, no microservices.
+
+---
+
+## 2. UPDATE PROTOCOL (run after EVERY completed step)
+
+When you finish a step from `06_Plan.md`:
+
+1. Edit `06_Plan.md` in place:
+   - Flip `- [ ] **X.Y**` → `- [x] **X.Y**`
+   - Append `  <!-- DONE: <ISO8601 UTC> -->` on the next line
+2. Propose a commit in this format: `feat(<phase>.<step>): <english summary>`
+3. Include the plan update in the **same** commit as the code.
+4. If you discover a required architectural change → **STOP**, add a note under "Change Log" in `06_Plan.md`, and wait for human confirmation. Never deviate silently.
+
+---
+
+## 3. SOURCE-OF-TRUTH PRIORITY (when docs conflict)
+
+- **What to build** → `01_PRD.md`
+- **How it navigates** → `02_AppFlow.md`
+- **How it looks** → `03_UI_Spec.md`
+- **How it's built** → `04_TRD.md`
+- **Data shape** → `05_Schema.md`
+- **Execution order** → `06_Plan.md`
+
+Most specific wins. Log conflicts to Change Log.
+
+---
+
+## 4. DEFINITION OF DONE (per step)
+
+- [ ] Code compiles (`pnpm tsc --noEmit`, `php -l` on touched PHP files)
+- [ ] Smoke-tested (or covered by a test)
+- [ ] No new dependencies without `04_TRD.md` approval
+- [ ] Bengali copy in `bn.ts` — never inline
+- [ ] Design tokens used — no hard-coded hex/font
+- [ ] `06_Plan.md` updated per §2
+- [ ] Conventional commit proposed
+
+---
+
+## 5. HARD REFUSALS
+
+If the user asks for any of the following, **politely decline** and cite the specific doc section:
+
+- Adding English UI strings (violates `01_PRD.md §5`)
+- Adding cart / checkout / payments / customer accounts (violates `01_PRD.md §5`)
+- Multi-language support (violates `01_PRD.md §5`)
+- Replacing PDO with raw SQL string building (violates `04_TRD.md §5`)
+- Adding dependencies outside the locked stack without a Change Log entry (violates `04_TRD.md §1`)
+- Skipping the `06_Plan.md` update protocol
+
+---
+
+## 6. WORKING STYLE
+
+- **Confirm first, then code.** At the start of each turn, state which plan step you're on.
+- **Small, atomic changes.** One step per turn where possible.
+- **Show diffs, not walls of code.** Prefer targeted edits over rewriting files.
+- **Ask before assuming.** When a doc is ambiguous, ask one clarifying question rather than inventing an answer.
+- **Types strict, no `any`.** Prefer `type` over `interface` for data shapes.
+- **React:** function components + hooks only.
+- **PHP:** `declare(strict_types=1)` at top of every file, PSR-12.
+- **Bengali content:** when asked to write Bengali copy, use premium, respectful, warm tone appropriate for a family business — not marketing-brochure clichés.
+
+---
+
+## 7. SESSION BOOTSTRAP (paste at the start of every new AI Studio session)
+
+> "You are the Food Ghor coding agent. The 6 docs under `/docs/` are attached. Read them in order (01 → 06). Then report: (a) the first unchecked step in `06_Plan.md`, (b) a one-line summary of what that step requires, and (c) any blockers. Do not start coding until you have confirmed this plan with me."
+````
+
+---
+
+## 📁 `CLAUDE.md` (root — portable)
+
+````markdown
+# CLAUDE.md — Food Ghor Agent Operating Manual
+
+You are the primary coding agent for **Food Ghor** (ফুড ঘর), a Bengali-first premium jaggery landing page built with **React + Vite + TypeScript**, **PHP 8.3**, and **MySQL 8.0**.
+
+## 0. MANDATORY PRE-FLIGHT (before ANY task)
+
+Before reading, writing, or modifying a single file, you **MUST**:
+1. Read all six files under `/docs/` in this exact order:
+   - `docs/01_PRD.md`
+   - `docs/02_AppFlow.md`
+   - `docs/03_UI_Spec.md`
+   - `docs/04_TRD.md`
+   - `docs/05_Schema.md`
+   - `docs/06_Plan.md`
+2. Read the current state of `docs/06_Plan.md` and identify the **first unchecked step**.
+3. Only then begin work — and scope your work to that step (plus its direct dependencies).
+
+If `/docs/` is missing or any file is empty, **STOP** and report; do not improvise.
+
+## 1. Non-negotiables
+- **Bengali-only UI copy.** All user-facing strings live in `frontend/src/content/bn.ts`. Never hard-code Bengali in components. Never introduce English in the visible UI (except brand "Food Ghor", phone digits, and `৳`).
+- **Bengali numerals** (০১২৩৪৫৬৭৮৯) for prices, weights, dates. Latin digits only inside `tel:` / `wa.me` URLs.
+- **Identifiers in English.** Variable names, DB columns, routes, API paths, types, functions — all English.
+- **Locked stack.** Do not add dependencies without an explicit instruction. Versions are fixed in `docs/04_TRD.md §1`.
+- **Design tokens only.** No hard-coded hex values, font families, or spacings in components — always reference `docs/03_UI_Spec.md` tokens via Tailwind aliases or CSS variables.
+- **API envelope.** Every JSON response follows `docs/04_TRD.md §4`. No exceptions.
+- **Security.** Every state-changing endpoint must have: CSRF check, rate limit, server-side validation. Prepared statements everywhere. See `docs/04_TRD.md §5`.
+
+## 2. The Update Protocol (after every step)
+When you complete a step from `docs/06_Plan.md`:
+1. Edit `docs/06_Plan.md` in place:
+   - Flip `- [ ] **X.Y** ...` → `- [x] **X.Y** ...`
+   - Append `  <!-- DONE: <ISO-8601 UTC> -->` on the following line
+2. Use conventional commit: `feat(<phase>.<step>): <English summary>`
+3. Include the plan update in the **same** commit as the code — never a separate "chore: update plan" commit.
+
+If you discover a required architectural change, **do not deviate silently.** Add a note under "Change Log" at the bottom of `06_Plan.md`, then wait for human confirmation.
+
+## 3. When the plan is unclear
+- Prefer PRD (01) for **what**
+- Prefer AppFlow (02) for **how it navigates**
+- Prefer UI Spec (03) for **how it looks**
+- Prefer TRD (04) for **how it's built**
+- Prefer Schema (05) for **data shape**
+- The Plan (06) is the **execution order** — respect it
+
+If two docs conflict, the **more specific** wins; log the conflict in `06_Plan.md` Change Log.
+
+## 4. Definition of Done (per step)
+- Code compiles (`pnpm tsc --noEmit`, PHP lint passes)
+- Smoke-tested or covered by a test
+- No new dependency without TRD approval
+- Bengali copy is in `bn.ts`, not inline
+- Plan updated per §2
+- Commit made
+
+## 5. Hard DO-NOTs
+- ❌ English UI text
+- ❌ Customer auth (none exist — see PRD Non-Goals)
+- ❌ Cart / checkout / payment gateway
+- ❌ `dangerouslySetInnerHTML` with API content
+- ❌ String interpolation into SQL
+- ❌ Committing `.env`, `vendor/`, or `node_modules/`
+- ❌ Skipping `06_Plan.md` update
+- ❌ Reordering phases (DB → API → UI → QA → deploy)
+````
+
+---
+
+## 📁 `.cursorrules` (root — portable)
+
+```yaml
+# .cursorrules — Food Ghor (Bengali Premium Jaggery Landing Page)
+# Applies to every Cursor generation / chat / agent run in this repo.
+
+project:
+  name: Food Ghor (ফুড ঘর)
+  domain: premium jaggery · Bengali-only UI · lead-generation landing page
+  stack_locked: true
+  docs_required: true
+
+pre_flight:
+  must_read:
+    - docs/01_PRD.md
+    - docs/02_AppFlow.md
+    - docs/03_UI_Spec.md
+    - docs/04_TRD.md
+    - docs/05_Schema.md
+    - docs/06_Plan.md
+  then:
+    - locate first unchecked step in 06_Plan.md
+    - scope task to that step only (plus direct deps)
+    - if docs/ is missing or empty: STOP and report
+
+hard_rules:
+  - All user-facing copy is Bengali. Strings live in frontend/src/content/bn.ts. Never inline Bengali in components.
+  - Bengali numerals (০১২৩৪৫৬৭৮৯) in prices, weights, dates. Latin digits ONLY inside tel:/wa.me URLs.
+  - Code identifiers (vars, funcs, DB cols, routes, types) are English.
+  - Tech stack, library versions, and folder layout are LOCKED per docs/04_TRD.md. No new deps without explicit instruction.
+  - Use design tokens from docs/03_UI_Spec.md only. No hard-coded hex, font-family, or spacing values.
+  - Every API JSON response follows the envelope in docs/04_TRD.md §4.
+  - All mutating endpoints require: CSRF token, rate limit, server-side validation.
+  - SQL: PDO prepared statements only. No string interpolation.
+  - React: no dangerouslySetInnerHTML with API content.
+  - No customer accounts, cart, checkout, or payment gateway (see PRD Non-Goals).
+
+update_protocol:
+  on_step_complete:
+    - edit docs/06_Plan.md: flip "- [ ] **X.Y**" to "- [x] **X.Y**"
+    - append "  <!-- DONE: <ISO8601-UTC> -->" on next line
+    - commit message: "feat(<phase>.<step>): <english summary>"
+    - include plan update in SAME commit as code
+  on_architectural_ambiguity:
+    - STOP coding
+    - add note under "Change Log" in docs/06_Plan.md
+    - wait for human confirmation before proceeding
+
+frontend:
+  runtime: node 20.18.x
+  package_manager: pnpm 9.12.x
+  bundler: vite 5.4.10
+  framework: react 18.3.1 + typescript 5.5.4 (strict)
+  router: react-router-dom 6.26.2
+  data: "@tanstack/react-query 5.56.2 + axios 1.7.7"
+  forms: react-hook-form 7.53.0 + zod 3.23.8
+  styles: tailwindcss 3.4.13
+  motion: framer-motion 11.5.4
+  icons: lucide-react 0.441.0
+  toast: sonner 1.5.0
+
+backend:
+  runtime: php 8.3.x (FPM)
+  deps: vlucas/phpdotenv 5.6.x, monolog/monolog 3.7.x
+  auth: php native sessions (httponly, secure, samesite=strict)
+  password_hash: PASSWORD_ARGON2ID
+
+database:
+  engine: mysql 8.0.x
+  charset: utf8mb4 / utf8mb4_0900_ai_ci
+  storage: innodb
+  migrations: raw SQL, idempotent, lexical order
+
+folders:
+  frontend_pages: frontend/src/pages
+  frontend_ui: frontend/src/components/ui
+  frontend_sections: frontend/src/components/sections
+  frontend_layout: frontend/src/components/layout
+  frontend_content: frontend/src/content/bn.ts
+  frontend_lib: frontend/src/lib
+  backend_controllers: backend/src/Controllers
+  backend_middleware: backend/src/Middleware
+  backend_models: backend/src/Models
+  migrations: backend/database/migrations
+
+definition_of_done:
+  - code compiles (pnpm tsc --noEmit; php -l)
+  - smoke-tested or covered by a test
+  - no new deps without TRD approval
+  - Bengali copy in bn.ts (never inline)
+  - design tokens used (no hard-coded hex/fonts)
+  - docs/06_Plan.md updated per update_protocol
+  - conventional commit made
+
+style:
+  commits: "feat(<phase>.<step>): <summary>"
+  ts: strict, no `any`, prefer `type` over `interface` for data shapes
+  react: function components + hooks only; no class components
+  php: declare(strict_types=1) at top of every file; PSR-12
+  sql: uppercase keywords, one clause per line
+  errors: never leak stack traces in API responses in production
+
+refuse:
+  - adding English UI strings
+  - adding cart/checkout/payments/customer accounts
+  - multi-language support
+  - replacing PDO with string-built SQL
+  - adding dependencies outside the locked stack without TRD amendment
+  - bypassing the docs/06_Plan.md update protocol
+```
+
+---
+
+## 🔧 How to wire this into Google AI Studio (exact steps)
+
+1. **Create the repo** with `docs/` + the three config files (`AI_STUDIO_SYSTEM_PROMPT.md`, `CLAUDE.md`, `.cursorrules`).
+
+2. **In Google AI Studio**, create a new Prompt:
+   - **Model:** `Gemini 2.5 Pro` (for architecture/planning) or `Gemini 2.0 Flash` (for fast iterative coding)
+   - **System Instructions:** paste the *entire contents* of `AI_STUDIO_SYSTEM_PROMPT.md`
+   - **Temperature:** `0.2` (deterministic code generation)
+   - **Max output tokens:** maximum available
+
+3. **Attach the 6 docs as files** to the session (drag-and-drop into the Files panel):
+   - `01_PRD.md`, `02_AppFlow.md`, `03_UI_Spec.md`, `04_TRD.md`, `05_Schema.md`, `06_Plan.md`
+
+4. **First message to Gemini:**
+   > "You are the Food Ghor coding agent. Read the 6 attached docs in order (01 → 06). Then tell me: (a) the first unchecked step in `06_Plan.md`, (b) a one-line summary of what it requires, (c) any blockers. Do not write code yet."
+
+5. **Confirm the plan** — then say *"Proceed with Phase 0, step 0.1."*
+
+6. **At the end of each AI Studio response**, Gemini will propose a commit and a `06_Plan.md` diff. **Apply both manually** (or via your local agent) before continuing. This is what keeps the plan in sync — AI Studio can *propose* the plan update, but only the filesystem commit makes it real.
+
+7. **When starting a new AI Studio session** (context resets), re-attach the docs + re-paste the bootstrap message. The `06_Plan.md` you commit locally *is* the state — so always commit it back into the repo before the next session.
+
+---
+
+## 🧭 Why this architecture is agent-agnostic and safe
+
+| Failure mode | How this design prevents it |
+|--------------|----------------------------|
+| Agent invents architecture mid-task | `04_TRD.md` + `05_Schema.md` are LOCKED; any deviation requires a Change Log entry |
+| Agent drifts off-brand | `03_UI_Spec.md` locks colors, fonts, spacing, states at token level |
+| Agent forgets Bengali-numeral rule | Repeated in PRD §6, UI Spec §2, TRD, and all 3 agent config files |
+| Agent skips error/empty states | `02_AppFlow.md §5` enumerates every required state |
+| Agent jumps ahead in scope | `06_Plan.md` is the source of truth for "current work"; pre-flight forces locating the first unchecked step |
+| Agent silently skips steps | Update protocol requires `- [x]` + ISO timestamp + commit — a receipt trail in git |
+| Agent adds forbidden features | PRD §5 Non-Goals + agent §5 Refusals; both explicit |
+| Agent breaks security | TRD §5 lists 15 non-negotiable constraints; agent refuses SQLi-prone patterns |
+| Context loss between AI Studio sessions | `06_Plan.md` committed to repo = persistent state; re-attach + bootstrap restores full context |
+
+You now have a **zero-ambiguity scaffolding** that works whether the agent is Google AI Studio (primary), Claude Code, or Cursor. Drop the files in, paste the system prompt, attach the docs, and say: **"Read `/docs/` in order. Confirm the first unchecked step in `06_Plan.md`. Then execute Phase 0, step 0.1."** — Gemini will proceed predictably and update the plan as it goes.
